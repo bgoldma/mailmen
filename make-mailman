@@ -54,7 +54,7 @@ cd "${SRC_TREE}"
 
 ./configure --prefix="${PREFIX}" \
   --with-username=${MM_USER} --with-groupname=${MM_GROUP} \
-  --with-mail-gid=${MM_MAIL_GID} --with-cgi-gid=${MMCGI_GID} \
+  --with-mail-gid=${MM_MAIL_GID} --with-cgi-gid=${MM_CGI_GID} \
   --without-permcheck --with-mailhost=${MM_DOMAIN} \
   --with-urlhost=${MM_WEB_DOMAIN}
 
@@ -88,9 +88,9 @@ chmod a+x etc/init.d/${INIT_SCRIPT_NAME}
 
 # fix permissions (requires fakeroot environment!)
 chown -R root:root .
-chown -R root:list ./${PREFIX}
-chown -R list:list ./${PREFIX}/qfiles
-chown -R root:list var/log/mailmen/${MM_DOMAIN}
+chown -R root:${MM_GROUP} ./${PREFIX}
+chown -R ${MM_USER}:${MM_GROUP} ./${PREFIX}/qfiles
+chown -R root:${MM_GROUP} var/log/mailmen/${MM_DOMAIN}
 chmod 2770 var/log/mailmen/${MM_DOMAIN}
 find ./${PREFIX} -path ./${PREFIX}/messages \
   -prune -o -type d -exec chmod 2775 {} \;
@@ -104,17 +104,17 @@ chmod g+s ./${PREFIX}/mail/mailman
 chmod -x ./${PREFIX}/scripts/paths.py 
 
 chmod o-rx ./${PREFIX}/archives/private
-chown list:www-data ./${PREFIX}/archives/private
+chown ${MM_USER}:${MM_CGI_GID} ./${PREFIX}/archives/private
 chmod 0755 ./${PREFIX}/cron/*
 chmod 0644 ./${PREFIX}/cron/{crontab.in,paths.py}
 
 rmdir ./${PREFIX}/locks
 ln -s /var/lock/mailmen-${MM_DOMAIN} ./${PREFIX}/locks
 mkdir -p var/lock/mailmen-${MM_DOMAIN}
-chown root:list var/lock/mailmen-${MM_DOMAIN}
+chown root:${MM_GROUP} var/lock/mailmen-${MM_DOMAIN}
 chmod 2775 var/lock/mailmen-${MM_DOMAIN}
 mkdir -p var/run/mailmen-${MM_DOMAIN}
-chown list:list var/run/mailmen-${MM_DOMAIN}
+chown ${MM_USER}:${MM_GROUP} var/run/mailmen-${MM_DOMAIN}
 rmdir ./${PREFIX}/logs
 ln -s /var/log/mailmen/${MM_DOMAIN} ./${PREFIX}/logs
 
